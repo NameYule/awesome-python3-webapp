@@ -9,7 +9,7 @@ async web application.
 '''
 
 
-import logging; logging.basicConfig(level=logging.INFO)
+import logging; logging.basicConfig(level=logging.DEBUG)
 
 import asyncio, os, json, time 
 from datetime import datetime
@@ -19,6 +19,9 @@ from jinja2 import Environment, FileSystemLoader
 
 import orm 
 from coroweb import add_routes, add_static
+
+import aiohttp_debugtoolbar
+from aiohttp_debugtoolbar import toolbar_middleware_factory
 
 def init_jinja2(app, **kw):
 	logging.info('init jinja2...')
@@ -66,11 +69,12 @@ async def response_factory(app, handler):
 	async def response(request):
 		logging.info('Response handler...')
 		r = await handler(request)
-		if isinstance(r, web, StreamResponse):
+		
+		if isinstance(r, web.StreamResponse):
 			return r
 		if isinstance(r, bytes):
 			resp = web.Response(body = r)
-			resp.content_type = 'application/octet=stream'
+			resp.content_type = 'application/octet-stream'
 			return resp
 		if isinstance(r, str):
 			if r.startswith('redirect:'):
@@ -117,7 +121,8 @@ def datetime_filter(t):
 async def init(loop):
 	await orm.create_pool(loop=loop, host = 'localhost', port = 3306, user ='www-data', password = 'www-data', db='awesome')
 
-	app = web.Application(loop=loop, middlewares = [logger_factory, response_factory])
+	app = web.Application(loop=loop, middlewares = [logger_factory, response_factory, toolbar_middleware_factory])
+	aiohttp_debugtoolbar.setup(app)
 	init_jinja2(app, filters =dict(datetime=datetime_filter))
 	add_routes(app, 'handlers')
 	add_static(app)
@@ -128,11 +133,3 @@ async def init(loop):
 loop= asyncio.get_event_loop()
 loop.run_until_complete(init(loop))
 loop.run_forever()
-
-@get('/')
-def index(request):
-	users = yield from User.findAll()
-	return{
-		'__template__': 'test.html',
-		'users': users
-	}
