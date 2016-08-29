@@ -1,0 +1,11 @@
+{
+    "folders": [
+        {
+           "path": "/Users/huyuhui/awesome-python3-webapp"
+        },
+    ],
+    "settings": {
+        "src_root": "/Users/huyuhui/awesome-python3-webapp",
+        "python_interpreter": "/Library/Frameworks/Python.framework/Versions/3.5"
+    }
+}

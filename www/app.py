@@ -8,8 +8,7 @@ __author__='Michael Liao'
 async web application.
 '''
 
-
-import logging; logging.basicConfig(level=logging.DEBUG)
+import logging; logging.basicConfig(level=logging.INFO)
 
 import asyncio, os, json, time 
 from datetime import datetime
@@ -20,8 +19,10 @@ from jinja2 import Environment, FileSystemLoader
 import orm 
 from coroweb import add_routes, add_static
 
-import aiohttp_debugtoolbar
+#import aiohttp_debugtoolbar
 from aiohttp_debugtoolbar import toolbar_middleware_factory
+
+
 
 def init_jinja2(app, **kw):
 	logging.info('init jinja2...')
@@ -62,15 +63,18 @@ async def data_factory(app, handler):
 			elif request.content_type.startswith('application/x-www-form-urlencoded'):
 				request.__data__ = await request.post()
 				logging.info('request form: %s' % str(request.__data__))
-		return (await handler(request))
+		return (await handler(request))		
 	return parse_data
 
 async def response_factory(app, handler):
 	async def response(request):
 		logging.info('Response handler...')
+		logging.info(str(handler))
+
 		r = await handler(request)
 		
 		if isinstance(r, web.StreamResponse):
+			logging.info('get streamresponse///' + str(r))
 			return r
 		if isinstance(r, bytes):
 			resp = web.Response(body = r)
@@ -84,17 +88,21 @@ async def response_factory(app, handler):
 			return resp
 		if isinstance(r, dict):
 			template =r.get('__template__')
+			logging.info('template get in /////')
 			if template is None:
 				resp = web.Response(body=json.dumps(r, ensure_ascii=False, default=lambda o:o.__dict).encode('utf-8'))
 				resp.content_type='application/json;charset=utf-8'
 				return resp
 			else:
+				
 				resp = web.Response(body=app['__templating__'].get_template(template).render(**r).encode('utf-8'))
+
 				resp.content_type = 'text.html;charset=utf-8'
 				return resp
 		if isinstance(r, int) and r>= 100 and r < 600:
 			return web.Response(r)
 		if isinstance(r, tuple) and len(r) == 2:
+			logging.info('get a tuple //// ')
 			t,m =r
 			if isinstance(t, int) and t >= 100 and t < 600:
 				return web.Response(t, str(m))
@@ -115,21 +123,22 @@ def datetime_filter(t):
 	if delta < 604800:
 		return u'%s天前' % (delta // 86400)
 	dt = datetime.fromtimestamp(t)
-	return u'%s小年%s小月%s小日' % (dt.year, dt.month, dt.day)
+	return u'%s年%s月%s日' % (dt.year, dt.month, dt.day)
 
 
 async def init(loop):
 	await orm.create_pool(loop=loop, host = 'localhost', port = 3306, user ='www-data', password = 'www-data', db='awesome')
 
-	app = web.Application(loop=loop, middlewares = [logger_factory, response_factory, toolbar_middleware_factory])
-	aiohttp_debugtoolbar.setup(app)
+	app = web.Application(loop=loop, middlewares = [logger_factory, response_factory])
+	#aiohttp_debugtoolbar.setup(app)
 	init_jinja2(app, filters =dict(datetime=datetime_filter))
 	add_routes(app, 'handlers')
 	add_static(app)
-	srv= await loop.create_server(app.make_handler(), '127.0.0.1', 9000)
-	logging.info('server started at http://127.0.0.1:9000...')
+	srv= await loop.create_server(app.make_handler(), '127.0.0.1', 8800)
+	logging.info('server started at http://127.0.0.1:8800...')
 	return srv
 
+#PYTHONASYNCIODEBUG = 1
 loop= asyncio.get_event_loop()
 loop.run_until_complete(init(loop))
 loop.run_forever()

@@ -1,0 +1,345 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"mod",
+				"module_name"
+			],
+			[
+				"conf",
+				"config_override"
+			],
+			[
+				"_has",
+				"_has_var_kw_arg"
+			],
+			[
+				"va",
+				"VAR_KEYWORD"
+			],
+			[
+				"para",
+				"parameters"
+			],
+			[
+				"sig",
+				"signature"
+			],
+			[
+				"pa",
+				"parameters"
+			],
+			[
+				"en",
+				"Environment"
+			],
+			[
+				"__",
+				"__init__"
+			],
+			[
+				"crea",
+				"create_at"
+			],
+			[
+				"__p",
+				"__primary_key__"
+			],
+			[
+				"is",
+				"isinstance"
+			],
+			[
+				"order",
+				"orderBy"
+			],
+			[
+				"pri",
+				"primary_key"
+			],
+			[
+				"dic",
+				"DictCursor"
+			],
+			[
+				"use",
+				"User"
+			],
+			[
+				"get",
+				"getValueOrDefault"
+			],
+			[
+				"map",
+				"mappings"
+			],
+			[
+				"tabl",
+				"tableName"
+			],
+			[
+				"fi",
+				"fields"
+			],
+			[
+				"prim",
+				"primaryKey"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "www/coroweb.py",
+			"settings":
+			{
+				"buffer_size": 5310,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Packages/Python/Python.sublime-build",
+					""
+				],
+				[
+					"Packages/Python/Python.sublime-build",
+					"Syntax Check"
+				]
+			],
+			[
+				"Packages/Python/Python.sublime-build",
+				"Syntax Check"
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"last_filter": "pa",
+		"selected_items":
+		[
+			[
+				"pa",
+				"Package Control: Install Package"
+			],
+			[
+				"package",
+				"Preferences: Browse Packages"
+			]
+		],
+		"width": 485.0
+	},
+	"console":
+	{
+		"height": 126.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/Users/huyuhui/awesome-python3-webapp/www/models.py",
+		"/Users/huyuhui/awesome-python3-webapp/www/handlers.py",
+		"/Users/huyuhui/awesome-python3-webapp/www/app.py",
+		"/Users/huyuhui/awesome-python3-webapp/www/coroweb.py",
+		"/Users/huyuhui/awesome-python3-webapp/www/test1.py",
+		"/Users/huyuhui/awesome-python3-webapp/www/config_default.py",
+		"/Users/huyuhui/awesome-python3-webapp/www/config.py",
+		"/Users/huyuhui/awesome-python3-webapp/www/templates/test.html",
+		"/Users/huyuhui/awesome-python3-webapp/www/config_override.py",
+		"/Users/huyuhui/awesome-python3-webapp/www/apis.py",
+		"/Users/huyuhui/awesome-python3-webapp/www/orm.py",
+		"/Users/huyuhui/Library/Application Support/Sublime Text 3/Packages/Default/Preferences.sublime-settings",
+		"/Users/huyuhui/awesome-python3-webapp/www/schema.sql",
+		"/Users/huyuhui/Library/Application Support/Sublime Text 3/Packages/Default/Default (OSX).sublime-keymap",
+		"/Users/huyuhui/Library/Application Support/Sublime Text 3/Packages/User/Default (OSX).sublime-keymap",
+		"/Users/huyuhui/awesome-python3-webapp/www/import",
+		"/Users/huyuhui/awesome-python3-webapp/www/templates/hello"
+	],
+	"find":
+	{
+		"height": 25.0
+	},
+	"find_in_files":
+	{
+		"height": 93.0,
+		"where_history":
+		[
+			"/Users/huyuhui/awesome-python3-webapp/www"
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"status",
+			"font",
+			"home",
+			"yield from ",
+			"@asyncio.coroutine\\n",
+			"bases",
+			"#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\n__author__='Michael Liao'\n\n\nimport asyncio, logging\n\nimport aiomysql\n\nfrom orm import Model, StringField, IntegerField\n\ndef log(sql, args=()):\n	logging.info('SQL: %s' % sql)\n\n\n@asyncio.coroutine\ndef create_pool(loop, **kw):\n	logging.info('create database connection pool...')\n	global __pool\n	__pool =yield from aiomysql.create_pool(\n		host=kw.get('host', 'localhost'),\n		port=kw.get('port', 3306),\n		user=kw['user'],\n		password=kw['password'],\n		db=kw['db'],\n		charset=kw.get('charset','utf8'),\n		autocommit=kw.get('autocommit',True),\n		maxsize=kw.get('maxsize',10),\n		minsize=kw.get('minsize',1),\n		loop=loop\n		)\n\n@asyncio.coroutine\ndef select(sql, args, size=None):\n	log(sql, args)\n	global __pool\n	with (yield from __pool) as conn:\n		cur=yield from conn.cursor(aiomysql.DictCursor)\n		yield from cur.execute(sql.replace('?', '%s'), args or ())\n		if size:\n			rs=yield from cur.fetchmany(size)\n		else:\n			rs=yield from cur.fetchall()\n		yield from cur.close()\n		logging.info('rows returned: %s' % len(rs))\n		return rs\n\n@asyncio.coroutine\ndef execute(sql, args):\n	log(sql)\n	with(yield from __pool) as conn:\n		try:\n			cur=yield from conn.cursor()\n			yield from cur.execute(sql,replace('?', '%s'),args)\n			affected =cur.rowcount\n			yield from cur.close()\n		except BaseException as e:\n			raise\n		return affected\n\nclass User(Model):\n	__table__='users'\n\n	id=IntegerField(primary_key=True)\n	name =StringField()\n\n#创建实例：\nuser=User(id=123, name ='Michael')\n#入数据库：\nuser.insert()\n#查询所有User对象：\nuser=User.findAll()\n\n\nclass Model(dict, metaclass=ModelMetaclass):\n	def __init__(self, **kw):\n		super(Model, self).__init__(**kw)\n\n	def __getattr__(self, key):\n		try:\n			return self[key]\n		except KeyError:\n			raise AttributeError(r\"'Model' Object has no attribute '%s'\" % key)\n\n	def __setattr__(self, key, value):\n		self[key]=value\n\n	def getValue(self, key):\n		return getattr(self, key, None)\n\n	def getValueOrDefault(self, key):\n		value=getattr(self, key, None)\n		if value is None:\n			field=self.__mappings__[key]\n			if field.default is no None:\n				value=field.default() if callable(field.default) else field.default\n				logging.debug('using default value for %s:%s' % (key, str(value)))\n				setattr(self,key, value)\n		return value\n\nclass Field(Object):\n	def __init__(self, name, column_type, primary_key, default):\n		self.name=name\n		self.column_type=column_type\n		self.primary_key=primary_key\n		self.default=default\n\n	def __str__(self):\n		return '<%s, %s:%s>' % (self.__class__.__name__, self.column_type, self.name)\n\nclass StringField(Field):\n	def __init__(self, name=None, primary_key=False, default=None, ddl='varchar(100)'):\n		super().__init__(name, ddl, primary_key, default)\n\nclass ModelMetaclass(type):\n	def __new__(cls, name,  bases, attrs):\n		#排除Model类本身：\n		if name =='Model':\n			return type.__new__(cls, name, bases, attrs)\n		#获取table名称：\n		tableName =attrs.get('__table__', None) or name \n		logging.info('found model: %s (table:%s)' % (name, tableName))\n		#获取所有Field和主键名：\n		mappings=dict()\n		fields=[]\n		primaryKey=None\n		for k,v in attrs.items():\n			if isinstance(v, Field):\n				logging.info('  found mapping: %s ==> %s' % (k,v))\n				mappings[k]=v\n				if v.primary_key:\n					#找到主键：\n					if primaryKey:\n						raise RuntimeError('Duplicate primary key for field: %s' %k)\n					primaryKey=k\n				else:\n					fields.append(k)\n		if not primaryKey:\n			raise RuntimeError('Primary key not found.')\n		for k in mappings.keys():\n			attrs.pop(k)\n		escaped_fields=list(map(lambda f: '`%s`' % f, fields))\n		attrs['__mappings__']=mappings  #保存属性和列的映射关系\n		attrs['__table__']=tableName\n		attrs['__primary_key__']=primaryKey  #主键属性名\n		attrs['__fields__']=fields  ＃除主键外的属性名\n		#构造默认的SELECT, INSERT, UPDATE和DELETE语句：\n		attrs['__select__'] = 'select `%s`, %s from `%s`' % (primaryKey, ','.join(escaped_fields), tableName)\n		attrs['__insert__'] = 'insert into `%s` (%s, `%s`) values (%s)' % (tableName, ','.join(escaped_fields), primaryKey, create_args_string(len(escaped_fields)+1))\n		attrs['__update__'] = 'update `%s` set %s where `%s` = ?' % (tableName, ','.join(map(lambda f: '`%s`=?' % (mappings.get(f).name or f), fields)), primaryKey)\n		attrs['__delete__'] = 'delete from `%s` where `%s` = ?' % (tableName, primaryKey)\n		return type.__new__(cls, name, bases, attrs)\n\nclass Model(dict):\n	\n	@classmethod\n	@asyncio.coroutine\n	def find(cls, pk):\n		' find object by primary key. ' \n		rs= yield from select ('%s where `%s`=?' % (cls.__select__, cls.__primary_key__), [pk],1)\n		if len(rs)==0:\n			return None\n		return cls(**rs[0])\n\n	@asyncio.coroutine\n	def save(self):\n		args = list(map(self.getValueOrDefault, self.__fields__))\n		args.append(self.getValueOrDefault(self.__primary_key__))\n		rows =yield from execute(self.__insert__, args)\n		if rows != 1:\n			logging.warn('failed to insert record: affected rows: %s' % rows)\n\n\nuser =yield from User.find('123')\n\n"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": true,
+		"replace_history":
+		[
+			"await ",
+			"async "
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "www/coroweb.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5310,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4555,
+								4555
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python Improved/PythonImproved.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 2393.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 25.0
+	},
+	"input":
+	{
+		"height": 33.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 211.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.unsaved_changes":
+	{
+		"height": 112.0
+	},
+	"pinned_build_system": "Packages/Python/Python.sublime-build",
+	"project": "awesome-python3-webapp.sublime-project",
+	"replace":
+	{
+		"height": 46.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
